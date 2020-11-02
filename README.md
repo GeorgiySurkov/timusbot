@@ -3,7 +3,7 @@
 This is a telegram bot for real-time leaderboard in group chats.
 
 #### Requirements
-- Python >=3.6
+- Python >=3.7
 
 #### Installation
 1. `git clone https://github.com/GeorgiySurkov/TimusBot.git`
