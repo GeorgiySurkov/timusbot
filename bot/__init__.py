@@ -2,7 +2,7 @@ from aiogram import Bot, Dispatcher, executor, types
 from logging.config import dictConfig
 import asyncio
 
-from . import db
+from . import db, timus
 from .config import Config
 
 
@@ -25,5 +25,4 @@ def run():
             executor.start_polling(dp, skip_updates=True)
     finally:
         # Graceful shutdown
-        loop.run_until_complete(db.shutdown())
-
+        loop.run_until_complete(asyncio.gather(db.shutdown(), timus.shutdown()))
