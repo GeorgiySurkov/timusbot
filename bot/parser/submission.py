@@ -15,6 +15,6 @@ class Submission:
     problem: Problem
     language: str
     verdict: Verdict
-    test_number: Optional[int]
-    runtime: Optional[float]
-    memory: Optional[int]
+    test_number: Optional[int] = None
+    runtime: Optional[float] = None
+    memory: Optional[int] = None

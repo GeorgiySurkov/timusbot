@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Optional
 
 
 class Verdict(Enum):
@@ -12,3 +13,12 @@ class Verdict(Enum):
     RE = 'Runtime error'
     RF = 'Restricted function'
     C = 'Compiling'
+
+
+def parse_verdict(verdict: str) -> Optional[Verdict]:
+    if verdict.startswith('Runtime error'):
+        return Verdict('Runtime error')
+    try:
+        return Verdict(verdict)
+    except ValueError:
+        return None

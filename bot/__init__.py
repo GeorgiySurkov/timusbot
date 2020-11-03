@@ -26,3 +26,5 @@ def run():
     finally:
         # Graceful shutdown
         loop.run_until_complete(asyncio.gather(db.shutdown(), timus.shutdown()))
+
+from . import handlers

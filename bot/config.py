@@ -17,8 +17,8 @@ class Config:
         'disable_existing_loggers': False,
         'formatters': {
             'basic': {
-                'format': '%(levelname)s %(asctime)s - %(message)s',
-                'datefmt': '%d-%b-%y %H:%M:%S'
+                'format': '[%(levelname)s] %(asctime)s - %(message)s',
+                'datefmt': '%d %b %y %H:%M:%S'
             }
         },
         'handlers': {
