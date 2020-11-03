@@ -6,9 +6,9 @@ class Group(Model):
     class Meta:
         table = 'group'
     id = fields.IntField(pk=True)
-    title = fields.CharField(max_length=128)
     telegram_id = fields.IntField(unique=True, index=True)
     tracked_users = fields.ManyToManyField('models.TimusUser', related_name='tracked_in')
+    leaderboard_message_id = fields.IntField(null=True, default=None)
 
 
 class TimusUser(Model):
