@@ -15,10 +15,11 @@ async def search(msg: types.Message) -> None:
                          'Например <i>/search georgiysurkov</i>', parse_mode=types.ParseMode.HTML)
         return
     search_result = await search_timus_user(username)
+    # TODO: use pymorphy2 for right words' forms.
     result_text = 'Результат поиска:\n'
     result_text += str(len(search_result))
     result_text += ' пользователей' if len(search_result) % 10 != 1 else ' пользователь'
     result_text += '\n\n'
     for i, user in enumerate(search_result):
-        result_text += f"{i + 1}) {user.username} - решенных задач: {user.solved_problems_amount}\n/track{user.id}\n"
+        result_text += f"{i + 1}) {user.username} - решенных задач: {user.solved_problems_amount}\n/track_{user.id}\n"
     await msg.answer(result_text)
