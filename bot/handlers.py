@@ -1,8 +1,30 @@
 from aiogram import types
 
 from . import dp, bot
-from .models import Group
+from .models import Group, TimusUser
 from .parser.profile_search import search_timus_user
+
+
+@dp.message_handler(lambda msg: msg.text.startswith('/track_'))
+async def track(msg: types.Message) -> None:
+    """
+    This handler will be called when user sends command `/track12415`
+    to track timus user with id 12415
+    """
+    cmd, args = msg.get_full_command()
+    if args != '':
+        return
+    _, timus_user_id = cmd.split('_', maxsplit=1)
+    if not timus_user_id.isdecimal():
+        return
+    timus_user_id = int(timus_user_id)
+    group, is_created = await Group.get_or_create({}, telegram_id=msg.chat.id)
+    if is_created:
+        await group.save()
+    timus_user, is_created = await TimusUser.get_or_create({}, timus_id=timus_user_id)
+    if is_created:
+        await timus_user.save()
+    await group.tracked_users.add(timus_user)
 
 
 @dp.message_handler(commands=['search'])
