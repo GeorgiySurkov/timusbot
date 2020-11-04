@@ -30,6 +30,16 @@ async def get_submissions(offset: int = None, count: int = 100) -> str:
         return await resp.text()
 
 
+async def get_profile(user_id: int) -> str:
+    """
+    Get profile page HTML.
+    :param user_id: profile page owner's id
+    :return: HTML string
+    """
+    async with session.get(f'https://{TIMUS_HOST}/author.aspx?id={user_id}&sort=difficulty') as resp:
+        return await resp.text()
+
+
 async def shutdown():
     global session
     await session.close()
