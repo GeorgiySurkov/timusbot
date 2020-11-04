@@ -15,6 +15,9 @@ async def track(msg: types.Message) -> None:
     if args != '':
         return
     _, timus_user_id = cmd.split('_', maxsplit=1)
+    bot_user = await bot.get_me()
+    if timus_user_id.endswith(f'@{bot_user.username}'):
+        timus_user_id = timus_user_id[:-len(f'@{bot_user.username}')]
     if not timus_user_id.isdecimal():
         return
     timus_user_id = int(timus_user_id)
@@ -32,6 +35,7 @@ async def search(msg: types.Message) -> None:
     """
     This handler will be called when user searches timus profiles
     """
+    # TODO: add inline keyboard for beautiful search result message
     cmd, username = msg.get_full_command()
     if username == '':
         await msg.answer('Нужно запрос для поиска пользователя\n'
@@ -44,7 +48,10 @@ async def search(msg: types.Message) -> None:
     result_text += ' пользователей' if len(search_result) % 10 != 1 else ' пользователь'
     result_text += '\n\n'
     for i, user in enumerate(search_result):
-        result_text += f"{i + 1}) {user.username} - решенных задач: {user.solved_problems_amount}\n/track_{user.id}\n"
+        user_s = f"{i + 1}) {user.username} - решенных задач: {user.solved_problems_amount}\n/track_{user.id}\n"
+        if len(result_text) + len(user_s) > 4096:
+            break
+        result_text += user_s
     await msg.answer(result_text)
 
 
@@ -57,10 +64,15 @@ async def added_to_group(msg: types.Message) -> None:
     """
     This handler will be called when bot is added to group
     """
-    group, is_created = Group.get_or_create({}, telegram_id=msg.chat.id)
+    group, is_created = await Group.get_or_create({}, telegram_id=msg.chat.id)
     if is_created:
         await group.save()
-    await msg.answer('Привет, я бот <a href="https://acm.timus.ru/">Тимуса</a>.\n'
-                     'Я могу вести рейтинг и отслеживать посылки привязанных аккаунтов.\n'
-                     'Чтобы привязать аккаунт напиши <i>/search <username></i>\n'
-                     'Например <i>/search georgiysurkov</i>', parse_mode=types.ParseMode.HTML)
+    await msg.answer('Привет, я бот для [Тимуса](https://acm.timus.ru/)\.\n'
+                     'Я могу вести рейтинг и отслеживать посылки привязанных аккаунтов\.\n'
+                     'Чтобы привязать аккаунт напиши _/search \<username\>_\n'
+                     'Например _/search georgiysurkov_', parse_mode=types.ParseMode.MARKDOWN_V2)
+
+
+@dp.message_handler()
+async def all_messages(msg: types.Message) -> None:
+    return
