@@ -1,4 +1,4 @@
-from typing import List, Tuple, Optional
+from typing import List, Optional
 from datetime import datetime
 from urllib.parse import parse_qs
 from bs4 import BeautifulSoup as bs, Tag
@@ -10,7 +10,7 @@ from .problem import Problem
 from ..timus import get_submissions
 
 
-async def get_last_submissions(prev_last_submission: Submission) -> List[Submission]:
+async def get_last_submissions(prev_last_submission: Optional[Submission] = None) -> List[Submission]:
     """
     Get last submissions from timus.
     :param prev_last_submission: First submission without verdict
@@ -18,7 +18,7 @@ async def get_last_submissions(prev_last_submission: Submission) -> List[Submiss
     """
     html = await get_submissions()
     last_submissions = _parse_submissions(html)
-    while last_submissions[-1].id > prev_last_submission.id:
+    while prev_last_submission is not None and last_submissions[-1].id > prev_last_submission.id:
         html = await get_submissions(last_submissions[-1].id - 1)
         last_submissions.extend(_parse_submissions(html))
     return last_submissions
