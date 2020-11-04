@@ -3,16 +3,16 @@ from typing import Optional
 
 
 class Verdict(Enum):
-    WA = 'Wrong answer'
-    CE = 'Compilation error'
-    AC = 'Accepted'
-    TL = 'Time limit exceeded'
-    ML = 'Memory limit exceeded'
-    OL = 'Output limit exceeded'
-    IL = 'Idleness limit exceeded'
-    RE = 'Runtime error'
-    RF = 'Restricted function'
-    C = 'Compiling'
+    wrong_answer = 'Wrong answer'
+    compilation_error = 'Compilation error'
+    accepted = 'Accepted'
+    time_limit = 'Time limit exceeded'
+    memory_limit = 'Memory limit exceeded'
+    output_limit = 'Output limit exceeded'
+    idleness_limit = 'Idleness limit exceeded'
+    runtime_error = 'Runtime error'
+    restricted_function = 'Restricted function'
+    compiling = 'Compiling'
 
 
 def parse_verdict(verdict: str) -> Optional[Verdict]:
