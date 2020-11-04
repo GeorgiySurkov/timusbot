@@ -1,8 +1,9 @@
 from aiogram import types
 
 from . import dp, bot
-from .models import Group, TimusUser
-from .parser.profile_search import search_timus_user
+from .models import GroupModel, TimusUserModel
+from bot.services.parser.profile_search import search_timus_user
+from bot.services.parser.timus_user import TimusUser
 
 
 @dp.message_handler(lambda msg: msg.text.startswith('/track_'))
@@ -21,13 +22,16 @@ async def track(msg: types.Message) -> None:
     if not timus_user_id.isdecimal():
         return
     timus_user_id = int(timus_user_id)
-    group, is_created = await Group.get_or_create({}, telegram_id=msg.chat.id)
+    group, is_created = await GroupModel.get_or_create(telegram_id=msg.chat.id)
     if is_created:
         await group.save()
-    timus_user, is_created = await TimusUser.get_or_create({}, timus_id=timus_user_id)
+    timus_user_model, is_created = await TimusUserModel.get_or_create(timus_id=timus_user_id)
     if is_created:
-        await timus_user.save()
-    await group.tracked_users.add(timus_user)
+        timus_user = TimusUser(timus_user_model.id)
+        await timus_user.update_profile_data()
+        timus_user_model.solved_problems_amount = timus_user.solved_problems_amount
+        await timus_user_model.save()
+    await group.tracked_users.add(timus_user_model)
 
 
 @dp.message_handler(commands=['search'])
@@ -64,7 +68,7 @@ async def added_to_group(msg: types.Message) -> None:
     """
     This handler will be called when bot is added to group
     """
-    group, is_created = await Group.get_or_create({}, telegram_id=msg.chat.id)
+    group, is_created = await GroupModel.get_or_create({}, telegram_id=msg.chat.id)
     if is_created:
         await group.save()
     await msg.answer('Привет, я бот для [Тимуса](https://acm.timus.ru/)\.\n'

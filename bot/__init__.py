@@ -10,7 +10,7 @@ from .middlewares import OnlyGroupsMiddleware
 dictConfig(Config.LOGGING)
 
 bot = Bot(token=Config.TELEGRAM_TOKEN)
-dp = Dispatcher(bot)
+dp = Dispatcher(bot, asyncio.get_event_loop())
 dp.middleware.setup(
     OnlyGroupsMiddleware('Привет, я бот для [Тимуса](https://acm.timus.ru/)\.\n'
                          'Я могу вести рейтинг и отслеживать посылки привязанных аккаунтов\.'
@@ -18,20 +18,22 @@ dp.middleware.setup(
                          ' чтобы протестировать меня\.', parse_mode=types.ParseMode.MARKDOWN_V2)
 )
 
+from .background_tasks import track_submissions
+
 
 def run():
-    loop = asyncio.get_event_loop()
-
     try:
-        loop.run_until_complete(db.init(Config))
+        dp.loop.run_until_complete(db.init(Config))
+        dp.loop.create_task(track_submissions(5))
         if Config.DEPLOY:
             executor.start_webhook(dp, webhook_path=Config.WEBHOOK_PATH,
-                                   host=Config.WEBAPP_HOST, port=Config.WEBAPP_PORT)
+                                   host=Config.WEBAPP_HOST, port=Config.WEBAPP_PORT,
+                                   skip_updates=True)
         else:
             executor.start_polling(dp, skip_updates=True)
     finally:
         # Graceful shutdown
-        loop.run_until_complete(asyncio.gather(db.shutdown(), timus.shutdown()))
+        dp.loop.run_until_complete(asyncio.gather(db.shutdown(), timus.shutdown()))
 
 
 from . import handlers

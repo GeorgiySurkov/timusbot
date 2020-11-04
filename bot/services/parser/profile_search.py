@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup as bs, Tag
 from urllib.parse import parse_qs, urlparse
 
 from .timus_user import TimusUser
-from .. import timus
+from ... import timus
 
 
 async def search_timus_user(username: str) -> List[TimusUser]:

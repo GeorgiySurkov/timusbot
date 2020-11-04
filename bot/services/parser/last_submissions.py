@@ -1,13 +1,13 @@
 from typing import List, Optional
 from datetime import datetime
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, urlparse
 from bs4 import BeautifulSoup as bs, Tag
 from .verdict import parse_verdict, Verdict
 
 from .submission import Submission
 from .timus_user import TimusUser
 from .problem import Problem
-from ..timus import get_submissions
+from ...timus import get_submissions
 
 
 async def get_last_submissions(prev_last_submission: Optional[Submission] = None) -> List[Submission]:
@@ -59,7 +59,7 @@ def _parse_submission_time(tr: Tag) -> datetime:
 
 def _parse_submission_author(tr: Tag) -> TimusUser:
     author_a = tr.contents[2].a
-    author_id = int(parse_qs(author_a['href'].query)['id'][0])
+    author_id = int(parse_qs(urlparse(author_a['href']).query)['id'][0])
     return TimusUser(author_id, author_a.contents[0])
 
 
@@ -74,21 +74,22 @@ def _parse_submission_language(tr: Tag) -> str:
 
 
 def _parse_submission_verdict(tr: Tag) -> Optional[Verdict]:
-    return parse_verdict(tr.contents[5].contents[0])
+    verdict = tr.contents[5].contents[0]
+    if isinstance(verdict, Tag):
+        verdict = verdict.contents[0]
+    return parse_verdict(verdict)
 
 
 def _parse_submission_test(tr: Tag) -> Optional[int]:
-    try:
-        return int(tr.contents[6].contents[0])
-    except ValueError:
+    if isinstance(tr.contents[6].contents[0], Tag):
         return None
+    return int(tr.contents[6].contents[0])
 
 
-def _parse_submission_runtime(tr: Tag) -> Optional[int]:
-    try:
-        return int(tr.contents[7].contents[0])
-    except ValueError:
+def _parse_submission_runtime(tr: Tag) -> Optional[float]:
+    if isinstance(tr.contents[7].contents[0], Tag):
         return None
+    return float(tr.contents[7].contents[0])
 
 
 def _parse_submission_memory(tr: Tag) -> Optional[int]:
