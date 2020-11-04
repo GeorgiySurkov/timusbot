@@ -11,10 +11,12 @@ dictConfig(Config.LOGGING)
 
 bot = Bot(token=Config.TELEGRAM_TOKEN)
 dp = Dispatcher(bot)
-dp.middleware.setup(OnlyGroupsMiddleware('Привет, я бот для [Тимуса](https://acm.timus.ru/)\.\n'
-                                         'Я могу вести рейтинг и отслеживать посылки привязанных аккаунтов\.'
-                                         'Я работаю только в групповых чатах, так что добавь меня в какой\-нибудь чат,'
-                                         ' чтобы протестировать меня\.', parse_mode=types.ParseMode.MARKDOWN_V2))
+dp.middleware.setup(
+    OnlyGroupsMiddleware('Привет, я бот для [Тимуса](https://acm.timus.ru/)\.\n'
+                         'Я могу вести рейтинг и отслеживать посылки привязанных аккаунтов\.'
+                         'Я работаю только в групповых чатах, так что добавь меня в какой\-нибудь чат,'
+                         ' чтобы протестировать меня\.', parse_mode=types.ParseMode.MARKDOWN_V2)
+)
 
 
 def run():
