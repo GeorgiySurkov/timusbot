@@ -24,7 +24,7 @@ from .background_tasks import track_submissions
 def run():
     try:
         dp.loop.run_until_complete(db.init(Config))
-        dp.loop.create_task(track_submissions(5))
+        dp.loop.create_task(track_submissions(15))
         if Config.DEPLOY:
             executor.start_webhook(dp, webhook_path=Config.WEBHOOK_PATH,
                                    host=Config.WEBAPP_HOST, port=Config.WEBAPP_PORT,
