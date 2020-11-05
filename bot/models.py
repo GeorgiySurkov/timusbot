@@ -16,5 +16,6 @@ class TimusUserModel(Model):
         table = 'timus_user'
     id = fields.IntField(pk=True)
     timus_id = fields.IntField(index=True)
+    username = fields.CharField(128, default='')
     solved_problems_amount = fields.IntField(null=True, default=None)
     joined = fields.DatetimeField(auto_now_add=True)

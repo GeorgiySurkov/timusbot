@@ -1,9 +1,24 @@
 from aiogram import types
+from aiogram.utils import exceptions as ex
 
 from . import dp, bot
 from .models import GroupModel, TimusUserModel
-from bot.services.parser.profile_search import search_timus_user
-from bot.services.parser.timus_user import TimusUser
+from .services.parser.profile_search import search_timus_user
+from .services.parser.timus_user import TimusUser
+from .services.message_formers import form_leaderboard_message
+
+
+@dp.message_handler(commands=['send_leaderboard'])
+async def send_leaderboard(msg: types.Message) -> None:
+    group, is_created = await GroupModel.get_or_create(telegram_id=msg.chat.id)
+    if group.leaderboard_message_id is not None:
+        try:
+            await bot.delete_message(msg.chat, group.leaderboard_message_id)
+        except ex.MessageError:
+            pass
+    answer = await msg.answer(await form_leaderboard_message(group))
+    group.leaderboard_message_id = answer.message_id
+    await group.save()
 
 
 @dp.message_handler(lambda msg: msg.text.startswith('/track_'))
@@ -30,6 +45,7 @@ async def track(msg: types.Message) -> None:
         timus_user = TimusUser(timus_user_id)
         await timus_user.update_profile_data()
         timus_user_model.solved_problems_amount = timus_user.solved_problems_amount
+        timus_user_model.username = timus_user.username
         await timus_user_model.save()
     await group.tracked_users.add(timus_user_model)
 
