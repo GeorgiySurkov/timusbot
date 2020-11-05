@@ -19,6 +19,11 @@ class Config:
             'basic': {
                 'format': '[%(levelname)s] %(asctime)s - %(message)s',
                 'datefmt': '%d %b %y %H:%M:%S'
+            },
+            'telegram': {
+                'class': 'bot.utils.formatters.MyHtmlFormatter',
+                'format': '<code>%(asctime)s</code> <b>%(levelname)s</b>\nFrom %(name)s:%(funcName)s\n%(message)s',
+                'use_emoji': True
             }
         },
         'handlers': {
@@ -35,13 +40,20 @@ class Config:
                 'filename': 'app.log',
                 'maxBytes': 100 * 2 ** 20,
                 'backupCount': 10
+            },
+            'telegram': {
+                'class': 'telegram_handler.TelegramHandler',
+                'token': TELEGRAM_TOKEN,
+                'chat_id': int(os.getenv('LOGGING_CHAT_ID')),
+                'level': 'ERROR',
+                'formatter': 'telegram'
             }
         },
         'loggers': {
             '': {
                 'level': 'INFO',
                 'propagate': True,
-                'handlers': ['console', 'file'],
+                'handlers': ['console', 'file', 'telegram'],
             },
             'bot.handlers': {
                 'level': 'INFO',

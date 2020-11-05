@@ -35,5 +35,5 @@ async def track_submissions(period: int) -> None:
                     groups_to_update_leaderboard |= set(author.tracked_in)
             for group in groups_to_update_leaderboard:
                 await update_group_leaderboard(group)
-        except Exception as arg:
-            logger.exception('Exception occured in submissions tracker.')
+        except Exception as e:
+            logger.error(e, exc_info=True)
