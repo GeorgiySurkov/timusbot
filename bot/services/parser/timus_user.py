@@ -20,6 +20,7 @@ class TimusUser:
 
     async def update_profile_data(self, parse_solved_problems: bool = False):
         html = await get_profile(self.id)
+        # TODO: handle incorrect id
         soup = bs(html, 'html.parser')
         self.username = self._get_username(soup)
         self.country = self._get_country(soup)
@@ -33,7 +34,8 @@ class TimusUser:
 
     @staticmethod
     def _get_username(soup: bs) -> str:
-        return soup.find_all('h2', {'class': 'author_name'})[0].contents[0]
+        temp = soup.find_all('h2', {'class': 'author_name'})
+        return temp[0].contents[0]
 
     @staticmethod
     def _get_country(soup: bs) -> str:

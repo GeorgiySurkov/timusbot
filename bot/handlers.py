@@ -27,7 +27,7 @@ async def track(msg: types.Message) -> None:
         await group.save()
     timus_user_model, is_created = await TimusUserModel.get_or_create(timus_id=timus_user_id)
     if is_created:
-        timus_user = TimusUser(timus_user_model.id)
+        timus_user = TimusUser(timus_user_id)
         await timus_user.update_profile_data()
         timus_user_model.solved_problems_amount = timus_user.solved_problems_amount
         await timus_user_model.save()

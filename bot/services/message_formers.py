@@ -27,7 +27,7 @@ def form_submission_message(submission: Submission) -> str:
     if submission.test_number is not None:
         text += f'_№ теста:_ {submission.test_number}\n'
     if submission.runtime is not None:
-        text += f'_Время работы:_ {submission.runtime} с\n'
+        text += f'_Время работы:_ {escape_md(str(submission.runtime))} с\n'
     if submission.memory is not None:
         text += f'_Выделено памяти:_ {submission.memory} КБ\n'
     return text

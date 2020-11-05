@@ -13,14 +13,16 @@ from ...timus import get_submissions
 async def get_last_submissions(prev_last_submission: Optional[Submission] = None) -> List[Submission]:
     """
     Get last submissions from timus.
-    :param prev_last_submission: First submission without verdict
+    :param prev_last_submission: submission without verdict
     :return: List of parsed submissions
     """
-    html = await get_submissions()
+    html = await get_submissions(count=10)
     last_submissions = _parse_submissions(html)
     while prev_last_submission is not None and last_submissions[-1].id > prev_last_submission.id:
         html = await get_submissions(last_submissions[-1].id - 1)
         last_submissions.extend(_parse_submissions(html))
+    if prev_last_submission is not None:
+        last_submissions = last_submissions[:last_submissions.index(prev_last_submission) + 1]
     return last_submissions
 
 
@@ -81,9 +83,9 @@ def _parse_submission_verdict(tr: Tag) -> Optional[Verdict]:
 
 
 def _parse_submission_test(tr: Tag) -> Optional[int]:
-    if isinstance(tr.contents[6].contents[0], Tag):
-        return None
-    return int(tr.contents[6].contents[0])
+    if isinstance(tr.contents[6].contents[0], str):
+        return int(tr.contents[6].contents[0])
+    return None
 
 
 def _parse_submission_runtime(tr: Tag) -> Optional[float]:
@@ -95,5 +97,4 @@ def _parse_submission_runtime(tr: Tag) -> Optional[float]:
 def _parse_submission_memory(tr: Tag) -> Optional[int]:
     if isinstance(tr.contents[8].contents[0], str):
         return int(''.join(tr.contents[8].contents[0].split()[:-1]))
-    else:
-        return None
+    return None
