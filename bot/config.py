@@ -43,13 +43,13 @@ class Config:
                 'propagate': True,
                 'handlers': ['console', 'file'],
             },
-            'bot': {
-                'level': 'INFO',
-                'propagate': True
-            },
             'bot.handlers': {
                 'level': 'INFO',
                 'propagate': True,
             },
+            'bot.background_tasks': {
+                'level': 'INFO',
+                'propagate': True
+            }
         }
     }
