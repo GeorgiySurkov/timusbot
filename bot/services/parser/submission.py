@@ -18,3 +18,7 @@ class Submission:
     test_number: Optional[int] = None
     runtime: Optional[float] = None
     memory: Optional[int] = None
+
+    def __eq__(self, other):
+        return type(other) is type(self) and other.id == self.id
+

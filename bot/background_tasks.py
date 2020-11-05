@@ -12,23 +12,22 @@ async def track_submissions(period: int) -> None:
     :param period: period in seconds between fetches of submissions
     :return:
     """
-    first_submission_without_verdict = None
+    last_handled_submission = None
     while True:
         groups_to_update_leaderboard = set()
         await asyncio.sleep(period)
-        last_submissions = await get_last_submissions(first_submission_without_verdict)
-        first_submission_without_verdict = None
-        for submission in last_submissions[::-1]:
+        last_submissions = await get_last_submissions(last_handled_submission)
+        for i, submission in enumerate(last_submissions):
             if submission.verdict == Verdict.compiling:
-                if first_submission_without_verdict is None:
-                    first_submission_without_verdict = submission
+                if i - 1 >= 0:
+                    last_handled_submission = last_submissions[i - 1]
+                break
             else:
                 author = await TimusUserModel.get_or_none(timus_id=submission.author.id)
+                last_handled_submission = submission
                 if author is None:
                     continue
                 await notify_about_submission_verdict(submission, author)
                 groups_to_update_leaderboard |= set(author.tracked_in)
-        if first_submission_without_verdict is None:
-            first_submission_without_verdict = last_submissions[0]
         for group in groups_to_update_leaderboard:
             await update_group_leaderboard(group)

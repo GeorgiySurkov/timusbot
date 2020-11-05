@@ -10,20 +10,22 @@ from .problem import Problem
 from ...timus import get_submissions
 
 
-async def get_last_submissions(prev_last_submission: Optional[Submission] = None) -> List[Submission]:
+async def get_last_submissions(prev_last_handled_submission: Optional[Submission] = None) -> List[Submission]:
     """
-    Get last submissions from timus.
-    :param prev_last_submission: submission without verdict
+    Get last submissions from timus. Guaranteed that first submission doesn't have verdict Compiling
+    :param prev_last_handled_submission: last handled submission
     :return: List of parsed submissions
     """
     html = await get_submissions(count=10)
     last_submissions = _parse_submissions(html)
-    while prev_last_submission is not None and last_submissions[-1].id > prev_last_submission.id:
-        html = await get_submissions(last_submissions[-1].id - 1)
+    while prev_last_handled_submission is not None and \
+            last_submissions[-1].id > prev_last_handled_submission.id and \
+            last_submissions[-1].verdict != Verdict.compiling:
+        html = await get_submissions(last_submissions[-1].id - 1, count=10)
         last_submissions.extend(_parse_submissions(html))
-    if prev_last_submission is not None:
-        last_submissions = last_submissions[:last_submissions.index(prev_last_submission) + 1]
-    return last_submissions
+    if prev_last_handled_submission is not None:
+        last_submissions = last_submissions[:last_submissions.index(prev_last_handled_submission)]
+    return last_submissions[::-1]
 
 
 def _parse_submissions(html: str) -> List[Submission]:
