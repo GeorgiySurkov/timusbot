@@ -21,7 +21,7 @@ class Config:
                 'datefmt': '%d %b %y %H:%M:%S'
             },
             'telegram': {
-                'class': 'bot.utils.formatters.MyHtmlFormatter',
+                '()': 'bot.utils.formatters.MyHtmlFormatter',
                 'format': '<code>%(asctime)s</code> <b>%(levelname)s</b>\nFrom %(name)s:%(funcName)s\n%(message)s',
                 'use_emoji': True
             }
@@ -38,7 +38,23 @@ class Config:
                 'level': 'INFO',
                 'formatter': 'basic',
                 'filename': 'app.log',
-                'maxBytes': 100 * 2 ** 20,
+                'maxBytes': 512 * 2 ** 20,
+                'backupCount': 10
+            },
+            'error': {
+                'class': 'logging.handlers.RotatingFileHandler',
+                'level': 'ERROR',
+                'formatter': 'basic',
+                'filename': 'error.log',
+                'maxBytes': 512 * 2 ** 20,
+                'backupCount': 10
+            },
+            'timus': {
+                'class': 'logging.handlers.RotatingFileHandler',
+                'level': 'INFO',
+                'formatter': 'basic',
+                'filename': 'timus.log',
+                'maxBytes': 512 * 2 ** 20,
                 'backupCount': 10
             },
             'telegram': {
@@ -53,7 +69,7 @@ class Config:
             '': {
                 'level': 'INFO',
                 'propagate': True,
-                'handlers': ['console', 'file', 'telegram'],
+                'handlers': ['console', 'file', 'telegram', 'error'],
             },
             'bot': {
                 'propagate': True,
@@ -66,6 +82,11 @@ class Config:
             'bot.background_tasks': {
                 'level': 'INFO',
                 'propagate': True
+            },
+            'bot.timus': {
+                'level': 'INFO',
+                'propagate': True,
+                'handlers': ['timus']
             }
         }
     }
