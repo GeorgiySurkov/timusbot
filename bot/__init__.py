@@ -1,5 +1,6 @@
 from aiogram import Bot, Dispatcher, executor, types
 from logging.config import dictConfig
+from logging import getLogger
 import asyncio
 
 from . import db, timus
@@ -8,17 +9,24 @@ from .middlewares import OnlyGroupsMiddleware
 
 # Configure logging
 dictConfig(Config.LOGGING)
+logger = getLogger(__name__)
 
 bot = Bot(token=Config.TELEGRAM_TOKEN)
 dp = Dispatcher(bot, asyncio.get_event_loop())
 dp.middleware.setup(
     OnlyGroupsMiddleware('Привет, я бот для [Тимуса](https://acm.timus.ru/)\.\n'
-                         'Я могу вести рейтинг и отслеживать посылки привязанных аккаунтов\.'
-                         'Я работаю только в групповых чатах, так что добавь меня в какой\-нибудь чат,'
-                         ' чтобы протестировать меня\.', parse_mode=types.ParseMode.MARKDOWN_V2)
+                         'Я могу вести рейтинг и отслеживать посылки привязанных аккаунтов\. '
+                         'Я работаю только в групповых чатах, так что добавь меня в какой\-нибудь чат, '
+                         'чтобы протестировать меня\.', parse_mode=types.ParseMode.MARKDOWN_V2)
 )
 
 from .background_tasks import track_submissions
+
+
+@dp.errors_handler()
+async def global_error_handler(update, exc) -> bool:
+    logger.exception(exc, exc_info=True)
+    return True
 
 
 def run():

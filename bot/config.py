@@ -55,6 +55,10 @@ class Config:
                 'propagate': True,
                 'handlers': ['console', 'file', 'telegram'],
             },
+            'bot': {
+                'propagate': True,
+                'level': 'INFO',
+            },
             'bot.handlers': {
                 'level': 'INFO',
                 'propagate': True,
