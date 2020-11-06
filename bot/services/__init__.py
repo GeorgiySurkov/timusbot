@@ -1,10 +1,13 @@
 from aiogram import types
 from aiogram.utils import exceptions as ex
+from logging import getLogger
 
 from .. import bot
 from ..models import GroupModel, TimusUserModel
 from .parser.submission import Submission
 from .message_formers import form_leaderboard_message, form_submission_message
+
+logger = getLogger(__name__)
 
 
 async def update_group_leaderboard(group: GroupModel) -> None:
@@ -15,6 +18,7 @@ async def update_group_leaderboard(group: GroupModel) -> None:
                 group.telegram_id,
                 group.leaderboard_message_id
             )
+            logger.info(f'Updated leaderboard in group with id={group.telegram_id}')
         except ex.MessageError:
             pass
 
@@ -27,3 +31,4 @@ async def notify_about_submission_verdict(submission: Submission, author_model: 
             form_submission_message(submission),
             parse_mode=types.ParseMode.MARKDOWN_V2
         )
+        logger.info(f'Notified about submission by "{submission.author.username}" in group with id={group.telegram_id}')

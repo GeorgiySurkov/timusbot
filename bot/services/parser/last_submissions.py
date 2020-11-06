@@ -2,12 +2,15 @@ from typing import List, Optional
 from datetime import datetime
 from urllib.parse import parse_qs, urlparse
 from bs4 import BeautifulSoup as bs, Tag
-from .verdict import parse_verdict, Verdict
+from logging import getLogger
 
+from .verdict import parse_verdict, Verdict
 from .submission import Submission
 from .timus_user import TimusUser
 from .problem import Problem
 from ...timus import get_submissions
+
+logger = getLogger(__name__)
 
 
 async def get_last_submissions(prev_last_handled_submission: Optional[Submission] = None) -> List[Submission]:
@@ -45,8 +48,10 @@ def _parse_submission_tr(tr: Tag) -> Submission:
     test = _parse_submission_test(tr)
     runtime = _parse_submission_runtime(tr)
     memory = _parse_submission_memory(tr)
-    return Submission(s_id, time, author, problem, language,
+    res = Submission(s_id, time, author, problem, language,
                       verdict, test, runtime, memory)
+    logger.debug(f'Parsed submission \n{tr}\n{res}')
+    return res
 
 
 def _parse_submission_id(tr: Tag) -> int:
