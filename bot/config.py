@@ -37,23 +37,23 @@ class Config:
                 'class': 'logging.handlers.RotatingFileHandler',
                 'level': 'INFO',
                 'formatter': 'basic',
-                'filename': 'app.log',
-                'maxBytes': 512 * 2 ** 20,
+                'filename': os.getenv('APP_LOG_PATH', 'app.log'),
+                'maxBytes': 256 * 2 ** 20,
                 'backupCount': 10
             },
             'error': {
                 'class': 'logging.handlers.RotatingFileHandler',
                 'level': 'ERROR',
                 'formatter': 'basic',
-                'filename': 'error.log',
-                'maxBytes': 512 * 2 ** 20,
+                'filename': os.getenv('ERROR_LOG_PATH', 'app.log'),
+                'maxBytes': 256 * 2 ** 20,
                 'backupCount': 10
             },
             'timus': {
                 'class': 'logging.handlers.RotatingFileHandler',
                 'level': 'INFO',
                 'formatter': 'basic',
-                'filename': 'timus.log',
+                'filename': os.getenv('TIMUS_LOG_PATH', 'timus.log'),
                 'maxBytes': 512 * 2 ** 20,
                 'backupCount': 10
             },
@@ -66,25 +66,13 @@ class Config:
             }
         },
         'loggers': {
-            '': {
-                'level': 'INFO',
-                'propagate': True,
+            'bot': {
+                'propagate': False,
+                'level': 'DEBUG',
                 'handlers': ['console', 'file', 'telegram', 'error'],
             },
-            'bot': {
-                'propagate': True,
-                'level': 'INFO',
-            },
-            'bot.handlers': {
-                'level': 'INFO',
-                'propagate': True,
-            },
-            'bot.background_tasks': {
-                'level': 'INFO',
-                'propagate': True
-            },
             'bot.timus': {
-                'level': 'INFO',
+                'level': 'DEBUG',
                 'propagate': True,
                 'handlers': ['timus']
             }

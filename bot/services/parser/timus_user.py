@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup as bs, Tag
 
 from .problem import Problem
 from ...timus import get_profile
+from .. import exceptions as exc
 
 
 @dataclass(eq=False, order=False)
@@ -22,6 +23,8 @@ class TimusUser:
         html = await get_profile(self.id)
         # TODO: handle incorrect id
         soup = bs(html, 'html.parser')
+        if 'Author not found' in soup.text:
+            raise exc.UserNotFound('')
         self.username = self._get_username(soup)
         self.country = self._get_country(soup)
         stats_table = soup.find_all('table', {'class': 'author_stats'})[0]
