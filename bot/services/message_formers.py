@@ -40,5 +40,5 @@ async def form_tracked_users_message(group: GroupModel) -> str:
     text = 'Отслеживаемые пользователи\n\n'
     for i, user in enumerate(group.tracked_users):
         text += f'{i + 1}) {user.username} - /untrack_{user.timus_id}\n'
-    text += '\nНажми на команду /untrack_<id> чтобы уперестать отслеживать посылки этого пользователя.'
+    text += '\nНажми на команду /untrack_<id> чтобы перестать отслеживать посылки этого пользователя.'
     return text
