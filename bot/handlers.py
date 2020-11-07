@@ -1,5 +1,6 @@
 from aiogram import types
 from aiogram.utils import exceptions as ex
+from aiohttp.client_exceptions import ClientError
 from logging import getLogger
 
 from . import dp, bot
@@ -65,6 +66,9 @@ async def track(msg: types.Message) -> None:
     except exc.UserNotFound:
         await msg.answer(f'Автор с id {timus_user_id} не найден')
         return
+    except ClientError:
+        await msg.answer('Не удается подключиться к серварам Тимуса.')
+        return
     timus_user_model, is_created = await TimusUserModel.get_or_create(timus_id=timus_user_id)
     timus_user_model.solved_problems_amount = timus_user.solved_problems_amount
     timus_user_model.username = timus_user.username
@@ -101,6 +105,9 @@ async def untrack(msg: types.Message) -> None:
     except exc.UserNotFound:
         await msg.answer(f'Автор с id {timus_user_id} не найден')
         return
+    except ClientError:
+        await msg.answer('Не удается подключиться к серварам Тимуса.')
+        return
     timus_user_model, is_created = await TimusUserModel.get_or_create(timus_id=timus_user_id)
     timus_user_model.solved_problems_amount = timus_user.solved_problems_amount
     timus_user_model.username = timus_user.username
@@ -130,7 +137,11 @@ async def search(msg: types.Message) -> None:
         await msg.answer('Нужно запрос для поиска пользователя\n'
                          'Например <i>/search georgiysurkov</i>', parse_mode=types.ParseMode.HTML)
         return
-    search_result = await search_timus_user(username)
+    try:
+        search_result = await search_timus_user(username)
+    except ClientError:
+        await msg.answer('Не удается подключиться к серварам Тимуса.')
+        return
     # TODO: use pymorphy2 for right words' forms.
     result_text = 'Результат поиска:\n'
     result_text += str(len(search_result))

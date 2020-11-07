@@ -1,4 +1,5 @@
 from typing import List, Optional
+from aiohttp.client_exceptions import ClientError
 from datetime import datetime
 from urllib.parse import parse_qs, urlparse
 from bs4 import BeautifulSoup as bs, Tag
@@ -19,12 +20,18 @@ async def get_last_submissions(prev_last_handled_submission: Optional[Submission
     :param prev_last_handled_submission: last handled submission
     :return: List of parsed submissions
     """
-    html = await get_submissions(count=10)
+    try:
+        html = await get_submissions(count=10)
+    except ClientError:
+        return []
     last_submissions = _parse_submissions(html)
     while prev_last_handled_submission is not None and \
             last_submissions[-1].id > prev_last_handled_submission.id and \
             last_submissions[-1].verdict != Verdict.compiling:
-        html = await get_submissions(last_submissions[-1].id - 1, count=10)
+        try:
+            html = await get_submissions(last_submissions[-1].id - 1, count=10)
+        except ClientError:
+            return []
         last_submissions.extend(_parse_submissions(html))
     if prev_last_handled_submission is not None:
         last_submissions = last_submissions[:last_submissions.index(prev_last_handled_submission)]
