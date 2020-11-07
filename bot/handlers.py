@@ -6,7 +6,7 @@ from . import dp, bot
 from .models import GroupModel, TimusUserModel
 from .services.parser.profile_search import search_timus_user
 from .services.parser.timus_user import TimusUser
-from .services.message_formers import form_leaderboard_message
+from .services.message_formers import form_leaderboard_message, form_tracked_users_message
 from .services.command_parser import parse_track_command, parse_untrack_command
 from .services import exceptions as exc
 
@@ -22,9 +22,20 @@ async def send_leaderboard(msg: types.Message) -> None:
         except ex.MessageError:
             pass
     answer = await msg.answer(await form_leaderboard_message(group))
-    logger.info(f'Sent leaderboard to group with id={msg.chat.id}, title={msg.chat.title}')
+    logger.info(f'Sent leaderboard to group with id={msg.chat.id}, title="{msg.chat.title}"')
     group.leaderboard_message_id = answer.message_id
     await group.save()
+
+
+@dp.message_handler(commands=['get_tracked_users'])
+async def get_tracked_users(msg: types.Message) -> None:
+    group, is_created = await GroupModel.get_or_create(telegram_id=msg.chat.id)
+    if is_created:
+        await msg.answer('В этой группе еще нет отслеживаемых пользователей.')
+        await group.save()
+        return
+    await msg.answer(await form_tracked_users_message(group))
+    logger.info(f'Sent tracked users list to chat with id={msg.chat.id}, title="{msg.chat.title}"')
 
 
 @dp.message_handler(lambda msg: msg.text.startswith('/track_'))
@@ -59,7 +70,8 @@ async def track(msg: types.Message) -> None:
                          f'Отвяжите какого-нибудь пользователя, чтобы добавить нового')
         return
     await group.tracked_users.add(timus_user_model)
-    logger.info(f'Started tracking user "{timus_user.username}" in group with id={group.telegram_id}')
+    logger.info(f'Started tracking user "{timus_user.username}" in '
+                f'group with id={group.telegram_id}, title="{msg.chat.title}"')
     await msg.answer(f'Добавил {timus_user.username} к списку отслеживаемых пользователей.')
 
 
@@ -71,6 +83,8 @@ async def untrack(msg: types.Message) -> None:
         return
     group, is_created = await GroupModel.get_or_create(telegram_id=msg.chat.id)
     if is_created:
+        logger.info(f'Adding to group event wasn\'t handled, creating group in db'
+                    f' id={group.telegram_id}, title="{msg.chat.title}"')
         await group.save()
     timus_user = TimusUser(timus_user_id)
     try:
@@ -86,10 +100,13 @@ async def untrack(msg: types.Message) -> None:
         await msg.answer(f'{timus_user.username} не отслеживается в этом чате.')
         return
     await group.tracked_users.remove(timus_user_model)
+    await msg.answer(f'Удалил из списка отслеживаемых пользователей {timus_user.username}')
+    logger.info(f'Stopped tracking user "{timus_user.username}" in '
+                f'group with id={group.telegram_id}, title="{msg.chat.title}"')
     await timus_user_model.fetch_related('tracked_in')
     if len(timus_user_model.tracked_in) == 0 and not is_created:
         await timus_user_model.delete()
-        logger.info(f'Stopped tracking user "{timus_user.username}" in group with id={group.telegram_id}')
+        logger.info(f'Deleted TimusUser id={timus_user_model.id} because it is not followed anywhere.')
 
 
 @dp.message_handler(commands=['search'])
@@ -114,7 +131,7 @@ async def search(msg: types.Message) -> None:
         if len(result_text) + len(user_s) > 4096:
             break
         result_text += user_s
-    logger.info(f'Searched for users in group id={msg.chat.id}, title="{msg.chat.title}"')
+    logger.info(f'Searched for users query="{username}" in group id={msg.chat.id}, title="{msg.chat.title}"')
     await msg.answer(result_text)
 
 

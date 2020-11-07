@@ -8,9 +8,9 @@ from .parser.verdict import Verdict
 async def form_leaderboard_message(group: GroupModel) -> str:
     await group.fetch_related('tracked_users')
     text = "Рейтинг по количеству решенных задач:\n"
-    for i, user in enumerate(sorted(group.tracked_users, key=lambda user: user.solved_problems_amount)):
+    for i, user in enumerate(sorted(group.tracked_users, key=lambda user: user.solved_problems_amount, reverse=True)):
         # TODO: write correct form of word using pymorphy2
-        text += f'{i + 1}) {escape_md(user.username)} - {user.solved_problems_amount} задач'
+        text += f'{i + 1}) {escape_md(user.username)} - {user.solved_problems_amount} задач\n'
     return text
 
 
@@ -30,4 +30,15 @@ def form_submission_message(submission: Submission) -> str:
         text += f'_Время работы:_ {escape_md(str(submission.runtime))} с\n'
     if submission.memory is not None:
         text += f'_Выделено памяти:_ {submission.memory} КБ\n'
+    return text
+
+
+async def form_tracked_users_message(group: GroupModel) -> str:
+    await group.fetch_related('tracked_users')
+    if len(group.tracked_users) == 0:
+        return 'В этой группе еще нет отслеживаемых пользователей.'
+    text = 'Отслеживаемые пользователи\n\n'
+    for i, user in enumerate(group.tracked_users):
+        text += f'{i + 1}) {user.username} - /untrack_{user.timus_id}\n'
+    text += '\nНажми на команду /untrack_<id> чтобы уперестать отслеживать посылки этого пользователя.'
     return text

@@ -39,15 +39,17 @@ class Config:
                 'formatter': 'basic',
                 'filename': os.getenv('APP_LOG_PATH', 'app.log'),
                 'maxBytes': 256 * 2 ** 20,
-                'backupCount': 10
+                'backupCount': 10,
+                'encoding': 'utf-8'
             },
             'error': {
                 'class': 'logging.handlers.RotatingFileHandler',
                 'level': 'ERROR',
                 'formatter': 'basic',
-                'filename': os.getenv('ERROR_LOG_PATH', 'app.log'),
+                'filename': os.getenv('ERROR_LOG_PATH', 'error.log'),
                 'maxBytes': 256 * 2 ** 20,
-                'backupCount': 10
+                'backupCount': 10,
+                'encoding': 'utf-8'
             },
             'timus': {
                 'class': 'logging.handlers.RotatingFileHandler',
@@ -69,7 +71,7 @@ class Config:
             'bot': {
                 'propagate': False,
                 'level': 'DEBUG',
-                'handlers': ['console', 'file', 'telegram', 'error'],
+                'handlers': ['console', 'file', 'error', 'telegram'],
             },
             'bot.timus': {
                 'level': 'DEBUG',
