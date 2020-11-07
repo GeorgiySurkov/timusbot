@@ -23,7 +23,7 @@ class Config:
             'telegram': {
                 '()': 'bot.utils.formatters.MyHtmlFormatter',
                 'format': '<code>%(asctime)s</code> <b>%(levelname)s</b>\nFrom %(name)s:%(funcName)s\n%(message)s',
-                'use_emoji': True
+                # 'use_emoji': True
             }
         },
         'handlers': {
