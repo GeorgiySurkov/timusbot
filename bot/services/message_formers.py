@@ -10,7 +10,7 @@ async def form_leaderboard_message(group: GroupModel) -> str:
     text = "Рейтинг по количеству решенных задач:\n"
     for i, user in enumerate(sorted(group.tracked_users, key=lambda user: user.solved_problems_amount, reverse=True)):
         # TODO: write correct form of word using pymorphy2
-        text += f'{i + 1}) {escape_md(user.username)} - {user.solved_problems_amount} задач\n'
+        text += f'{i + 1}\) {escape_md(user.username)} \- {user.solved_problems_amount} задач\n'
     return text
 
 

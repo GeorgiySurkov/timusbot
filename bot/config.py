@@ -71,12 +71,19 @@ class Config:
             'bot': {
                 'propagate': False,
                 'level': 'DEBUG',
-                'handlers': ['console', 'file', 'error', 'telegram'],
+                'handlers': [
+                    'console',
+                    'file',
+                    'error',
+                    'telegram'
+                ],
             },
             'bot.timus': {
                 'level': 'DEBUG',
                 'propagate': True,
-                'handlers': ['timus']
+                'handlers': [
+                    'timus'
+                ]
             }
         }
     }

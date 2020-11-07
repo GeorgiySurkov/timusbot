@@ -8,7 +8,7 @@ from .services.parser.profile_search import search_timus_user
 from .services.parser.timus_user import TimusUser
 from .services.message_formers import form_leaderboard_message, form_tracked_users_message
 from .services.command_parser import parse_track_command, parse_untrack_command
-from .services import exceptions as exc
+from .services import exceptions as exc, update_group_leaderboard
 
 logger = getLogger(__name__)
 
@@ -21,10 +21,13 @@ async def send_leaderboard(msg: types.Message) -> None:
             await bot.delete_message(msg.chat.id, group.leaderboard_message_id)
         except ex.MessageError:
             pass
-    answer = await msg.answer(await form_leaderboard_message(group))
+    answer = await msg.answer(await form_leaderboard_message(group), parse_mode=types.ParseMode.MARKDOWN_V2)
     logger.info(f'Sent leaderboard to group with id={msg.chat.id}, title="{msg.chat.title}"')
     group.leaderboard_message_id = answer.message_id
     await group.save()
+    if is_created:
+        logger.info(f'Adding to group event wasn\'t handled, creating group in db'
+                    f' id={group.telegram_id}, title="{msg.chat.title}"')
 
 
 @dp.message_handler(commands=['get_tracked_users'])
@@ -33,6 +36,9 @@ async def get_tracked_users(msg: types.Message) -> None:
     if is_created:
         await msg.answer('В этой группе еще нет отслеживаемых пользователей.')
         await group.save()
+
+        logger.info(f'Adding to group event wasn\'t handled, creating group in db'
+                    f' id={group.telegram_id}, title="{msg.chat.title}"')
         return
     await msg.answer(await form_tracked_users_message(group))
     logger.info(f'Sent tracked users list to chat with id={msg.chat.id}, title="{msg.chat.title}"')
@@ -51,6 +57,8 @@ async def track(msg: types.Message) -> None:
     group, is_created = await GroupModel.get_or_create(telegram_id=msg.chat.id)
     if is_created:
         await group.save()
+        logger.info(f'Adding to group event wasn\'t handled, creating group in db'
+                    f' id={group.telegram_id}, title="{msg.chat.title}"')
     timus_user = TimusUser(timus_user_id)
     try:
         await timus_user.update_profile_data()
@@ -73,6 +81,7 @@ async def track(msg: types.Message) -> None:
     logger.info(f'Started tracking user "{timus_user.username}" in '
                 f'group with id={group.telegram_id}, title="{msg.chat.title}"')
     await msg.answer(f'Добавил {timus_user.username} к списку отслеживаемых пользователей.')
+    await update_group_leaderboard(group)
 
 
 @dp.message_handler(lambda msg: msg.text.startswith('/untrack_'))
@@ -83,9 +92,9 @@ async def untrack(msg: types.Message) -> None:
         return
     group, is_created = await GroupModel.get_or_create(telegram_id=msg.chat.id)
     if is_created:
+        await group.save()
         logger.info(f'Adding to group event wasn\'t handled, creating group in db'
                     f' id={group.telegram_id}, title="{msg.chat.title}"')
-        await group.save()
     timus_user = TimusUser(timus_user_id)
     try:
         await timus_user.update_profile_data()
@@ -107,6 +116,7 @@ async def untrack(msg: types.Message) -> None:
     if len(timus_user_model.tracked_in) == 0 and not is_created:
         await timus_user_model.delete()
         logger.info(f'Deleted TimusUser id={timus_user_model.id} because it is not followed anywhere.')
+    await update_group_leaderboard(group)
 
 
 @dp.message_handler(commands=['search'])

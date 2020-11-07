@@ -27,7 +27,11 @@ class TimusUser:
             raise exc.UserNotFound('')
         self.username = self._get_username(soup)
         self.country = self._get_country(soup)
-        stats_table = soup.find_all('table', {'class': 'author_stats'})[0]
+        search_res = soup.find_all('table', {'class': 'author_stats'})
+        if len(search_res) == 0:
+            self.solved_problems_amount = 0
+            return
+        stats_table = search_res[0]
         self.solved_problems_amount = self._get_solved_problems_amount(stats_table)
         self.place_by_problems = self._get_place_by_problems(stats_table)
         self.rating = self._get_rating(stats_table)
@@ -37,8 +41,10 @@ class TimusUser:
 
     @staticmethod
     def _get_username(soup: bs) -> str:
-        temp = soup.find_all('h2', {'class': 'author_name'})
-        return temp[0].contents[0]
+        temp = soup.find_all('h2', {'class': 'author_name'})[0].contents[0]
+        if isinstance(temp, Tag):
+            return temp.contents[0]
+        return temp
 
     @staticmethod
     def _get_country(soup: bs) -> str:

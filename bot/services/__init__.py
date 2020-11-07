@@ -16,7 +16,8 @@ async def update_group_leaderboard(group: GroupModel) -> None:
             await bot.edit_message_text(
                 await form_leaderboard_message(group),
                 group.telegram_id,
-                group.leaderboard_message_id
+                group.leaderboard_message_id,
+                parse_mode=types.ParseMode.MARKDOWN_V2
             )
             logger.info(f'Updated leaderboard in group with id={group.telegram_id}')
         except ex.MessageError:
