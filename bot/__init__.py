@@ -1,4 +1,5 @@
 from aiogram import Bot, Dispatcher, executor, types
+from aiogram.utils.exceptions import BadRequest
 from logging.config import dictConfig
 from logging import getLogger
 import asyncio
@@ -25,6 +26,8 @@ from .background_tasks import track_submissions
 
 @dp.errors_handler()
 async def global_error_handler(update, exc) -> bool:
+    if isinstance(exc, BadRequest) and str(exc) == 'Have no rights to send a message':
+        return True
     logger.exception(exc, exc_info=True)
     return True
 
