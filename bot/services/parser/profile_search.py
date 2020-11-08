@@ -8,6 +8,8 @@ from ... import timus
 
 async def search_timus_user(username: str) -> List[TimusUser]:
     html = await timus.search_profiles(username)
+    if html == '':
+        return []
     soup = bs(html, 'html.parser')
     users_table = soup.find_all('table', {'class': 'ranklist'})[0]
     users = [_parse_user_tr(user_tr) for user_tr in users_table.contents[1:]]

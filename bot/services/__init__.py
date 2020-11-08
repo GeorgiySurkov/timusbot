@@ -31,14 +31,15 @@ async def update_group_leaderboard(group: GroupModel) -> None:
     :param group:
     :return:
     """
-    await group.fetch_related('tracked_users')
-    for user in group.tracked_users:
-        t = TimusUser(user.timus_id)
-        await t.update_profile_data()
-        user.username = t.username
-        user.solved_problems_amount = t.solved_problems_amount
-        await user.save()
-    await update_group_leaderboard_message(group)
+    if group.leaderboard_message_id is not None:
+        await group.fetch_related('tracked_users')
+        for user in group.tracked_users:
+            t = TimusUser(user.timus_id)
+            await t.update_profile_data()
+            user.username = t.username
+            user.solved_problems_amount = t.solved_problems_amount
+            await user.save()
+        await update_group_leaderboard_message(group)
 
 
 async def notify_about_submission_verdict(submission: Submission, author_model: TimusUserModel) -> None:

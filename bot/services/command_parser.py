@@ -12,7 +12,7 @@ async def _base_tracking_command_parser(msg: types.Message) -> int:
     bot_user = await bot.get_me()
     if timus_user_id.endswith(f'@{bot_user.username}'):
         timus_user_id = timus_user_id[:-len(f'@{bot_user.username}')]
-    if not timus_user_id.isdecimal():
+    if not timus_user_id.isdecimal() or len(timus_user_id) == 0 or timus_user_id[0] == '0':
         raise CommandParseError('id is not int')
     return int(timus_user_id)
 

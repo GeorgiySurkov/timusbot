@@ -54,12 +54,17 @@ async def track(msg: types.Message) -> None:
     try:
         timus_user_id = await parse_track_command(msg)
     except exc.TrackCommandParseError:
+        await msg.answer('Неправильный формат команды.')
         return
     group, is_created = await GroupModel.get_or_create(telegram_id=msg.chat.id)
     if is_created:
         await group.save()
         logger.info(f'Adding to group event wasn\'t handled, creating group in db'
                     f' id={group.telegram_id}, title="{msg.chat.title}"')
+    timus_user_model = await group.tracked_users.filter(timus_id=timus_user_id).first()
+    if timus_user_model is not None:
+        await msg.answer(f'{timus_user_model.username} уже добавлен в список отслеживаемых пользователей.')
+        return
     timus_user = TimusUser(timus_user_id)
     try:
         await timus_user.update_profile_data()
@@ -74,9 +79,6 @@ async def track(msg: types.Message) -> None:
     timus_user_model.username = timus_user.username
     await timus_user_model.save()
     await group.fetch_related('tracked_users')
-    if timus_user_model in group.tracked_users:
-        await msg.answer(f'{timus_user.username} уже добавлен в список отслеживаемых пользователей.')
-        return
     if len(group.tracked_users) == 40:
         await msg.answer(f'Нельзя отслеживать больше 40 пользователей.\n'
                          f'Отвяжите какого-нибудь пользователя, чтобы добавить нового')
@@ -93,6 +95,7 @@ async def untrack(msg: types.Message) -> None:
     try:
         timus_user_id = await parse_untrack_command(msg)
     except exc.UntrackCommandParseError:
+        await msg.answer('Неправильный формат команды.')
         return
     group, is_created = await GroupModel.get_or_create(telegram_id=msg.chat.id)
     if is_created:
@@ -108,19 +111,18 @@ async def untrack(msg: types.Message) -> None:
     except ClientError:
         await msg.answer('Не удается подключиться к серварам Тимуса.')
         return
-    timus_user_model, is_created = await TimusUserModel.get_or_create(timus_id=timus_user_id)
+    timus_user_model = await group.tracked_users.filter(timus_id=timus_user_id).first()
+    if timus_user_model is None:
+        await msg.answer(f'{timus_user.username} не отслеживается в этой группе.')
+        return
     timus_user_model.solved_problems_amount = timus_user.solved_problems_amount
     timus_user_model.username = timus_user.username
-    await group.fetch_related('tracked_users')
-    if is_created or timus_user_model not in group.tracked_users:
-        await msg.answer(f'{timus_user.username} не отслеживается в этом чате.')
-        return
     await group.tracked_users.remove(timus_user_model)
     await msg.answer(f'Удалил из списка отслеживаемых пользователей {timus_user.username}')
     logger.info(f'Stopped tracking user "{timus_user.username}" in '
                 f'group with id={group.telegram_id}, title="{msg.chat.title}"')
     await timus_user_model.fetch_related('tracked_in')
-    if len(timus_user_model.tracked_in) == 0 and not is_created:
+    if len(timus_user_model.tracked_in) == 0:
         await timus_user_model.delete()
         logger.info(f'Deleted TimusUser id={timus_user_model.id} because it is not followed anywhere.')
     await update_group_leaderboard(group)
