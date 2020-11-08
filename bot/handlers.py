@@ -9,7 +9,7 @@ from .services.parser.profile_search import search_timus_user
 from .services.parser.timus_user import TimusUser
 from .services.message_formers import form_leaderboard_message, form_tracked_users_message
 from .services.command_parser import parse_track_command, parse_untrack_command
-from .services import exceptions as exc, update_group_leaderboard
+from .services import exceptions as exc, update_group_leaderboard, update_group_tracked_users_stats
 
 logger = getLogger(__name__)
 
@@ -17,21 +17,23 @@ logger = getLogger(__name__)
 @dp.message_handler(commands=['send_leaderboard'])
 async def send_leaderboard(msg: types.Message) -> None:
     group, is_created = await GroupModel.get_or_create(telegram_id=msg.chat.id)
+    if is_created:
+        await group.save()
+        logger.info(f'Adding to group event wasn\'t handled, creating group in db'
+                    f' id={group.telegram_id}, title="{msg.chat.title}"')
     if group.leaderboard_message_id is not None:
         try:
             await bot.delete_message(msg.chat.id, group.leaderboard_message_id)
         except ex.MessageError:
             pass
+    await update_group_tracked_users_stats(group)
     answer = await msg.answer(await form_leaderboard_message(group), parse_mode=types.ParseMode.MARKDOWN_V2)
     logger.info(f'Sent leaderboard to group with id={msg.chat.id}, title="{msg.chat.title}"')
     group.leaderboard_message_id = answer.message_id
     await group.save()
-    if is_created:
-        logger.info(f'Adding to group event wasn\'t handled, creating group in db'
-                    f' id={group.telegram_id}, title="{msg.chat.title}"')
 
 
-@dp.message_handler(commands=['get_tracked_users'])
+@dp.message_handler(commands=['send_tracked_users'])
 async def get_tracked_users(msg: types.Message) -> None:
     group, is_created = await GroupModel.get_or_create(telegram_id=msg.chat.id)
     if is_created:
