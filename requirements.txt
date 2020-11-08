@@ -14,7 +14,10 @@ multidict==5.0.0
 pydantic==1.7.2
 PyPika==0.43.0
 python-dotenv==0.15.0
+python-telegram-handler==2.2
 pytz==2020.4
+requests==2.24.0
 soupsieve==2.0.1
 tortoise-orm==0.16.17
+urllib3==1.25.11
 yarl==1.6.2
