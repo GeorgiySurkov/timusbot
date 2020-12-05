@@ -49,9 +49,14 @@ async def update_group_tracked_users_stats(group: GroupModel) -> None:
 async def notify_about_submission_verdict(submission: Submission, author_model: TimusUserModel) -> None:
     await author_model.fetch_related('tracked_in')
     for group in author_model.tracked_in:
-        await bot.send_message(
-            group.telegram_id,
-            form_submission_message(submission),
-            parse_mode=types.ParseMode.MARKDOWN_V2
-        )
-        logger.info(f'Notified about submission by "{submission.author.username}" in group with id={group.telegram_id}')
+        try:
+            await bot.send_message(
+                group.telegram_id,
+                form_submission_message(submission),
+                parse_mode=types.ParseMode.MARKDOWN_V2
+            )
+            logger.info(
+                f'Notified about submission by "{submission.author.username}" in group with id={group.telegram_id}'
+            )
+        except ex.ChatNotFound:
+            pass
